@@ -1,14 +1,76 @@
-<html>
+ <!DOCTYPE html>
+ <html>
    <head>
+	<meta charset="UTF-8">
+	<title>Calculator</title>
    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script>
-	    function test(){
-	    	var esbServiceEndpoint = 'http://localhost:3000';
-	    	console.log("Calling test :D")
-	    	$.get(esbServiceEndpoint, function(data, status){
-	    		console.log("Data " + data + ", Status " + status);
-	    	});
-	    }
+	    function test(display){
+	    	var parsedOperation = parseOperation(display);
+	    	var code = getMOperationCode(parsedOperation[1][0])
+	    	var op1 = parsedOperation[0][0];
+	    	var op2 = parsedOperation[0][1];
+	    	var esbServiceEndpoint = 'http://192.168.1.40:11223/calculator/json';	
+	    	var body = '{"code" : '+code+', "op1" : '+op1+', "op2" : '+op2+'}';
+	    	console.log("Calling test :D");
+	    	$.post(esbServiceEndpoint,
+	    		body,
+	    		function(data, status){
+	    		var result = data["response"]["result"] 
+	    		calculator.display.value = result
+	    	});	    	
+	    };
+
+		function isNumber(token) {
+		    return token !== undefined && token.match(/^[0-9]+$/) !== null;
+		}	
+
+		function parseOperation(display){
+			var op = [];
+			var mop = [];			
+	    	var i = 0;
+	    	var j = 0;	   
+			op.push("");
+	    	mop.push("");
+	    	while(i < display.length){
+	    		if(isNumber(display[i])){
+	    			op[j] += display[i];
+	    		}
+	    		else{	    			
+	    			op.push("");
+	    			mop.push("");
+	    			mop[j] = display[i];
+	    			j++;
+	    		}
+	    		i++;
+	    	}
+	    	mop.pop();
+	    	console.log(op);
+	    	console.log(mop);
+	    	return [op, mop];
+		}
+
+		function getMOperationCode(mOperation){
+			var code = 0;
+			switch(mOperation) {
+			    case "+":
+			        code = 1;
+			        break;
+			    case "-":
+			        code = 2;
+			        break;
+			    case "*":
+			        code = 3;
+			        break;
+			    case "/":
+			        code = 4;
+			        break;
+			    default:
+			        break;
+			} 
+			return code;
+		}
+
 	</script>
    </head>
    <body>
@@ -38,9 +100,9 @@
                <td><input type="button" class="operator" name="times" value="x" onclick="calculator.display.value += '*'"></td>
             </tr>
             <tr>
-               <td><input type="button" id="clear" name="clear" value="c" onclick="calculator.display.value = '';test();"></td>
+               <td><input type="button" id="clear" name="clear" value="c" onclick="calculator.display.value = ''"></td>
                <td><input type="button" name="zero" value="0" onclick="calculator.display.value += '0'"></td>
-               <td><input type="button" name="doit" value="=" onclick="calculator.display.value = eval(calculator.display.value)"></td>
+               <td><input type="button" name="doit" value="=" onclick="test(calculator.display.value);"></td>
                <td><input type="button" class="operator" name="div" value="/" onclick="calculator.display.value += '/'"></td>
             </tr>
          </table>
